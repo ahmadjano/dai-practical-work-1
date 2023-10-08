@@ -33,8 +33,7 @@ public class Parser implements Runnable {
 
                 double[] coord = image.getGPSCoordinate();
                 if (coord != null) {
-                    output.append("GPS Coordinate: ").append(coord[0]).append(", ").append(coord[1]).append('\n');;
-                    output.append("GPS Datum: ").append(image.getGPSDatum()).append('\n');;
+                    output.append("GPS Coordinate: ").append(coord[0]).append(", ").append(coord[1]).append('\n');
                 }
 
                 output.append('\n');
