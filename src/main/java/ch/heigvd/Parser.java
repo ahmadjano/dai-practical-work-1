@@ -13,11 +13,14 @@ public class Parser implements Runnable {
     @Parameters(index = "0", description = "The directory containing the image files to parse.")
     private File directory;
 
-    @Option(names = {"-c", "--charset"}, defaultValue = "UTF-8")
-    private String charset;
-
     @Option(names = {"-v", "--verbose"})
     private boolean verbose;
+
+    @Option(names = {"-o", "--output-file"})
+    private String outputFilename;
+
+    @Option(names = {"-c", "--charset"}, defaultValue = "UTF-8")
+    private String charset;
 
     @Override
     public void run() {
@@ -29,7 +32,7 @@ public class Parser implements Runnable {
         // A lot of string concatenation is going to take place inside the for loop so a StringBuilder object will be more performant.
         StringBuilder output = new StringBuilder();
 
-        // We could pass a filter object to listFiles() to get only image files, but I couldn't figure it out yet.
+        // We could pass a filter object to listFiles() to get only image files, but I couldn't figure that out yet.
         File[] files = directory.listFiles();
 
         for (int progress = 0; progress < files.length; progress++) {
@@ -60,22 +63,28 @@ public class Parser implements Runnable {
 
         }
 
-        printVerbose(""); // New line.
-        printVerbose(output.toString());
+        // Decide what to do with the output depending on whether the user provided an output filename.
+        if (outputFilename == null) {
+            System.out.println(output);
+        } else {
+            printVerbose(""); // New line.
+            printVerbose(output.toString());
 
-        try {
-            saveToFile(output, charset);
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
+            try {
+                saveToFile(output, charset);
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+
         }
     }
 
     private void saveToFile(StringBuilder output, String charset) throws IOException {
-        FileWriter writer = new FileWriter(String.format("metadata-%s.txt", Instant.now()), Charset.forName(charset));
+        FileWriter writer = new FileWriter(outputFilename, Charset.forName(charset));
         writer.write(output.toString());
         writer.close();
 
-        System.out.println("File generated successfully.");
+        System.out.printf("File %s generated successfully.", outputFilename);
     }
 
     private void printVerbose(String message) {
