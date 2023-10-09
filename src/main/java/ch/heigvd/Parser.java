@@ -3,12 +3,16 @@ package ch.heigvd;
 import picocli.CommandLine.*;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 @Command(name = "extractmd", description = "Extracts metadata information from image files.")
 public class Parser implements Runnable {
     @Parameters(index = "0", description = "The directory containing the image files to parse.")
     private File directory;
+
+    @Option(names = {"-c", "--charset"}, defaultValue = "UTF-8")
+    private String charset;
 
     @Override
     public void run() {
@@ -17,12 +21,13 @@ public class Parser implements Runnable {
             return;
         }
 
+        // A lot of string concatenation is going to take place inside the for loop so a StringBuilder object will be more performant.
         StringBuilder output = new StringBuilder();
 
         // We could pass a filter object to listFiles() to get only image files.
         for (final File file : directory.listFiles()) {
             // Is image file
-            if (file.getName().endsWith(".jpg") || file.getName().endsWith(".png")) {
+            if (file.getName().toLowerCase().endsWith(".jpg") || file.getName().toLowerCase().endsWith(".png")) {
                 javaxt.io.Image image = new javaxt.io.Image(file.getAbsolutePath());
                 java.util.HashMap<Integer, Object> exif = image.getExifTags();
 
@@ -41,15 +46,16 @@ public class Parser implements Runnable {
         }
 
         System.out.println(output);
+
         try {
-            saveToFile(output);
+            saveToFile(output, charset);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    private void saveToFile(StringBuilder output) throws IOException {
-        FileWriter writer = new FileWriter("metadata.txt", StandardCharsets.UTF_8);
+    private void saveToFile(StringBuilder output, String charset) throws IOException {
+        FileWriter writer = new FileWriter("metadata.txt", Charset.forName(charset));
         writer.write(output.toString());
         writer.close();
     }
