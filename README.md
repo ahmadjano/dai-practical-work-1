@@ -21,11 +21,16 @@ Alternatively, there is a pre-configuration included to generate the JAR file in
 
 ## Usage
 
-Execute the following command:
+`java --jar ./package.jar [-v] [-c=<charset>] [-f=<fileFormat>] [-o=<outputFilename>] <directory>`
+
+The only required parameter is the **directory path** containing the images to process.
+
+Execute the following command as a start:
 
 `java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /your-pictures-folder`
 
 #### Specify an output file
+The output file is going to contain all the metadata extracted from the images. Default file format is a plain text (.txt) file.
 
 `java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /your-pictures-folder -o data.txt`
 
