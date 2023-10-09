@@ -40,7 +40,7 @@ The output file is going to contain all the metadata extracted from the images. 
 
 #### Specify a charset for the output file
 
-`java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /tmp/pictures -o data.csv --charset=UTF-8 --file-format=csv`
+`java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /your-pictures-folder -o data.csv --charset=UTF-8 --file-format=csv`
 
 #### Verbose mode
 Print the progress and the output data in console using the `-v` or `--verbose` flag.
