@@ -5,6 +5,8 @@ import picocli.CommandLine.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Date;
 
 @Command(name = "extractmd", description = "Extracts metadata information from image files.")
 public class Parser implements Runnable {
@@ -13,6 +15,9 @@ public class Parser implements Runnable {
 
     @Option(names = {"-c", "--charset"}, defaultValue = "UTF-8")
     private String charset;
+
+    @Option(names = {"-v", "--verbose"})
+    private boolean verbose;
 
     @Override
     public void run() {
@@ -24,8 +29,12 @@ public class Parser implements Runnable {
         // A lot of string concatenation is going to take place inside the for loop so a StringBuilder object will be more performant.
         StringBuilder output = new StringBuilder();
 
-        // We could pass a filter object to listFiles() to get only image files.
-        for (final File file : directory.listFiles()) {
+        // We could pass a filter object to listFiles() to get only image files, but I couldn't figure it out yet.
+        File[] files = directory.listFiles();
+
+        for (int progress = 0; progress < files.length; progress++) {
+            File file = files[progress];
+
             // Is image file
             if (file.getName().toLowerCase().endsWith(".jpg") || file.getName().toLowerCase().endsWith(".png")) {
                 javaxt.io.Image image = new javaxt.io.Image(file.getAbsolutePath());
@@ -41,11 +50,18 @@ public class Parser implements Runnable {
                     output.append("GPS Coordinate: ").append(coord[0]).append(", ").append(coord[1]).append('\n');
                 }
 
-                output.append('\n');
+                // If not last element.
+                if (progress < files.length - 1) {
+                    output.append('\n');
+                }
+
+                printVerbose(String.format("File %s processed. (%d/%d)", file.getName(), progress + 1, files.length));
             }
+
         }
 
-        System.out.println(output);
+        printVerbose(""); // New line.
+        printVerbose(output.toString());
 
         try {
             saveToFile(output, charset);
@@ -55,8 +71,16 @@ public class Parser implements Runnable {
     }
 
     private void saveToFile(StringBuilder output, String charset) throws IOException {
-        FileWriter writer = new FileWriter("metadata.txt", Charset.forName(charset));
+        FileWriter writer = new FileWriter(String.format("metadata-%s.txt", Instant.now()), Charset.forName(charset));
         writer.write(output.toString());
         writer.close();
+
+        System.out.println("File generated successfully.");
+    }
+
+    private void printVerbose(String message) {
+        if (verbose) {
+            System.out.println(message);
+        }
     }
 }
