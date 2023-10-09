@@ -34,6 +34,7 @@ public class Parser implements Runnable {
             return;
         }
 
+        // A lot of string concatenation is going to take place inside the for loop so a StringBuilder object will be more performant.
         StringBuilder output = new StringBuilder();
 
         // We could pass a filter object to listFiles() to get only image files, but I couldn't figure that out yet.

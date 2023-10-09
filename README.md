@@ -13,14 +13,29 @@ HEX | Tag          | Description
 Additionally, GPS information is extracted when available.
 ## Build
 
-This project is written in Java and can be build using Maven.
+This project is written in **Java** and can be build with **Maven**. A Maven wrapper is already include so you could simply run the following command:
 
 `./mvnw dependency:resolve clean compile package`
 
-Alternatively, there is a build pre-configuration included to generate the JAR file in case you use Intellij IDEA called `Generate a JAR package file`
+Alternatively, there is a pre-configuration included to generate the JAR file in case you use the IDE **Intellij IDEA** called `Generate a JAR package file`
 
 ## Usage
 
 Execute the following command:
 
 `java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /your-pictures-folder`
+
+#### Specify an output file
+
+`java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /your-pictures-folder -o data.txt`
+
+#### Specify a file format for the output
+
+`java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /your-pictures-folder -o data.csv --file-format=csv`
+
+#### Specify a charset for the output file
+
+`java -jar target/dai-practical-work-1-1.0-SNAPSHOT.jar /tmp/pictures -o data.csv --charset=UTF-8 --file-format=csv`
+
+#### Verbose mode
+Print the progress and the output data in console using the `-v` or `--verbose` flag.
