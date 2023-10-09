@@ -4,9 +4,6 @@ import picocli.CommandLine.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Date;
 
 @Command(name = "extractmd", description = "Extracts metadata information from image files.")
 public class Parser implements Runnable {
@@ -22,6 +19,9 @@ public class Parser implements Runnable {
     @Option(names = {"-c", "--charset"}, defaultValue = "UTF-8")
     private String charset;
 
+    @Option(names = {"-f", "--file-format"}, defaultValue = "txt")
+    private String fileFormat;
+
     @Override
     public void run() {
         if (!directory.exists()) {
@@ -29,11 +29,19 @@ public class Parser implements Runnable {
             return;
         }
 
-        // A lot of string concatenation is going to take place inside the for loop so a StringBuilder object will be more performant.
+        if (!(fileFormat.equals("txt") || fileFormat.equals("csv"))) {
+            System.err.printf("File format %s not supported.%n", fileFormat);
+            return;
+        }
+
         StringBuilder output = new StringBuilder();
 
         // We could pass a filter object to listFiles() to get only image files, but I couldn't figure that out yet.
         File[] files = directory.listFiles();
+
+        if (fileFormat.equals("csv")) {
+            output.append("filename,date,camera,manufacturer\n");
+        }
 
         for (int progress = 0; progress < files.length; progress++) {
             File file = files[progress];
@@ -43,14 +51,22 @@ public class Parser implements Runnable {
                 javaxt.io.Image image = new javaxt.io.Image(file.getAbsolutePath());
                 java.util.HashMap<Integer, Object> exif = image.getExifTags();
 
-                output.append("Filename: ").append(file.getName()).append('\n');;
-                output.append("Date: ").append(exif.get(0x0132)).append('\n');
-                output.append("Camera: ").append(exif.get(0x0110)).append('\n');;
-                output.append("Manufacturer: ").append(exif.get(0x010F)).append('\n');;
+                if (fileFormat.equals("txt")) {
+                    output.append("Filename: ").append(file.getName()).append('\n');
+                    output.append("Date: ").append(exif.get(0x0132)).append('\n');
+                    output.append("Camera: ").append(exif.get(0x0110)).append('\n');
+                    output.append("Manufacturer: ").append(exif.get(0x010F)).append('\n');
 
-                double[] coord = image.getGPSCoordinate();
-                if (coord != null) {
-                    output.append("GPS Coordinate: ").append(coord[0]).append(", ").append(coord[1]).append('\n');
+                    double[] gps = image.getGPSCoordinate();
+                    if (gps != null) {
+                        output.append("GPS Coordinate: ").append(gps[0]).append(", ").append(gps[1]).append('\n');
+                    }
+
+                } else if (fileFormat.equals("csv")) {
+                    output.append(file.getName()).append(',')
+                            .append(exif.get(0x0132)).append(',')
+                            .append(exif.get(0x0110)).append(',')
+                            .append(exif.get(0x010F));
                 }
 
                 // If not last element.
@@ -67,7 +83,7 @@ public class Parser implements Runnable {
         if (outputFilename == null) {
             System.out.println(output);
         } else {
-            printVerbose(""); // New line.
+            printVerbose("\nOutput: ");
             printVerbose(output.toString());
 
             try {
@@ -77,6 +93,7 @@ public class Parser implements Runnable {
             }
 
         }
+
     }
 
     private void saveToFile(StringBuilder output, String charset) throws IOException {
@@ -84,7 +101,8 @@ public class Parser implements Runnable {
         writer.write(output.toString());
         writer.close();
 
-        System.out.printf("File %s generated successfully.", outputFilename);
+        System.out.println();
+        System.out.printf("File %s generated successfully.%n", outputFilename);
     }
 
     private void printVerbose(String message) {
