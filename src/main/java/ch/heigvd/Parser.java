@@ -41,7 +41,7 @@ public class Parser implements Runnable {
         File[] files = directory.listFiles();
 
         if (fileFormat.equals("csv")) {
-            output.append("filename,date,camera,manufacturer\n");
+            output.append("filename,date,camera,manufacturer,gps_latitude,gps_longitude\n");
         }
 
         for (int progress = 0; progress < files.length; progress++) {
@@ -68,6 +68,11 @@ public class Parser implements Runnable {
                             .append(exif.get(0x0132)).append(',')
                             .append(exif.get(0x0110)).append(',')
                             .append(exif.get(0x010F));
+
+                    double[] gps = image.getGPSCoordinate();
+                    if (gps != null) {
+                        output.append(',').append(gps[0]).append(",").append(gps[1]);
+                    }
                 }
 
                 // If not last element.
